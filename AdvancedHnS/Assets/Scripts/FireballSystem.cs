@@ -32,7 +32,7 @@ public class FireballSystem : MonoBehaviour
         Vector2 direction;
         if (aimAtCursor && Camera.main != null)
         {
-            Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             direction = ((Vector2)mouseWorld - (Vector2)firePoint.position).normalized;
         }
         else

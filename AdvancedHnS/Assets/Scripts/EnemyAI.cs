@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class EnemyAI : MonoBehaviour
@@ -12,8 +12,11 @@ public class EnemyAI : MonoBehaviour
     public float attackRange = 1.5f;
 
     [Header("Patrol")]
+    public float patrolDistance = 4f;
     public Transform[] patrolPoints;
     public float waitAtPoint = 2f;
+    private Vector2 leftPoint, rightPoint;
+    private Vector2 patrolTarget;
 
     [Header("Combat")]
     public float attackDamage = 15f;
@@ -27,20 +30,26 @@ public class EnemyAI : MonoBehaviour
     private float nextAttackTime;
     private bool isStunned;
     private bool facingRight = true;
+    private Animator anim;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         health = GetComponent<HealthSystem>();
         if (health != null) health.onDeath.AddListener(OnDeath);
+
+        leftPoint = new Vector2(transform.position.x - patrolDistance * 0.5f, transform.position.y);
+        rightPoint = new Vector2(transform.position.x + patrolDistance * 0.5f, transform.position.y);
+        patrolTarget = rightPoint;
     }
 
     void Update()
     {
         if (isStunned || (health != null && !health.IsAlive())) return;
         float dist = player != null ? Vector2.Distance(transform.position, player.position) : Mathf.Infinity;
-
+        if (anim != null) anim.SetFloat("Speed", Mathf.Abs(rb.linearVelocity.x));
         if (dist <= attackRange && Time.time >= nextAttackTime) Attack();
         else if (dist <= detectionRange) ChasePlayer();
         else Patrol();
@@ -48,18 +57,16 @@ public class EnemyAI : MonoBehaviour
 
     void Patrol()
     {
-        if (patrolPoints == null || patrolPoints.Length == 0) { rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); return; }
         if (waitTimer > 0) { waitTimer -= Time.deltaTime; rb.linearVelocity = new Vector2(0, rb.linearVelocity.y); return; }
 
-        Transform target = patrolPoints[currentPatrolIndex];
-        Vector2 dir = (target.position - transform.position).normalized;
+        Vector2 dir = (patrolTarget - (Vector2)transform.position).normalized;
         rb.linearVelocity = new Vector2(dir.x * moveSpeed, rb.linearVelocity.y);
         if (dir.x > 0 && !facingRight) Flip();
         else if (dir.x < 0 && facingRight) Flip();
 
-        if (Vector2.Distance(transform.position, target.position) < 0.3f)
+        if (Mathf.Abs(transform.position.x - patrolTarget.x) < 0.3f)
         {
-            currentPatrolIndex = (currentPatrolIndex + 1) % patrolPoints.Length;
+            patrolTarget = (patrolTarget == rightPoint) ? leftPoint : rightPoint;
             waitTimer = waitAtPoint;
         }
     }
@@ -77,6 +84,7 @@ public class EnemyAI : MonoBehaviour
     {
         rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
         nextAttackTime = Time.time + attackCooldown;
+        if (anim != null) anim.SetTrigger("Attack");                              // ← add
         if (player != null) player.GetComponent<HealthSystem>()?.TakeDamage(attackDamage);
     }
 
@@ -85,6 +93,7 @@ public class EnemyAI : MonoBehaviour
     IEnumerator StunRoutine(float d)
     {
         isStunned = true;
+        if (anim != null) anim.SetTrigger("Hurt");
         var sr = GetComponent<SpriteRenderer>();
         if (sr) sr.color = Color.yellow;
         yield return new WaitForSeconds(d);
@@ -94,7 +103,12 @@ public class EnemyAI : MonoBehaviour
 
     void Flip() { facingRight = !facingRight; Vector3 s = transform.localScale; s.x *= -1; transform.localScale = s; }
 
-    void OnDeath() { GameManager.Instance?.EnemyDefeated(); Destroy(gameObject, 0.3f); }
+    void OnDeath()
+    {
+        if (anim != null) anim.SetBool("IsDead", true);                          // ← add
+        GameManager.Instance?.EnemyDefeated();
+        Destroy(gameObject, 1f);   // ← was 0.3f; longer so the death animation can finish
+    }
 
     void OnDrawGizmosSelected()
     {

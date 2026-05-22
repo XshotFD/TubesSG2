@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
-        else Destroy(gameObject);
+        else Destroy(gameObject);   // a second one in the next scene self-destructs
     }
 
     void Start() => coins = PlayerPrefs.GetInt("Coins", 0);

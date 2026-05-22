@@ -181,6 +181,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Launch"",
+                    ""type"": ""Button"",
+                    ""id"": ""b7452a93-ad1d-4f96-974f-2cfc517a6bf7"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -337,6 +346,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""AimGlide"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ceeafbab-a910-4196-9970-946665411f81"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Launch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -355,6 +375,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
         m_Player_Pause = m_Player.FindAction("Pause", throwIfNotFound: true);
         m_Player_AimGlide = m_Player.FindAction("AimGlide", throwIfNotFound: true);
+        m_Player_Launch = m_Player.FindAction("Launch", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -445,6 +466,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Interact;
     private readonly InputAction m_Player_Pause;
     private readonly InputAction m_Player_AimGlide;
+    private readonly InputAction m_Player_Launch;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -496,6 +518,10 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/AimGlide".
         /// </summary>
         public InputAction @AimGlide => m_Wrapper.m_Player_AimGlide;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Launch".
+        /// </summary>
+        public InputAction @Launch => m_Wrapper.m_Player_Launch;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -552,6 +578,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @AimGlide.started += instance.OnAimGlide;
             @AimGlide.performed += instance.OnAimGlide;
             @AimGlide.canceled += instance.OnAimGlide;
+            @Launch.started += instance.OnLaunch;
+            @Launch.performed += instance.OnLaunch;
+            @Launch.canceled += instance.OnLaunch;
         }
 
         /// <summary>
@@ -593,6 +622,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @AimGlide.started -= instance.OnAimGlide;
             @AimGlide.performed -= instance.OnAimGlide;
             @AimGlide.canceled -= instance.OnAimGlide;
+            @Launch.started -= instance.OnLaunch;
+            @Launch.performed -= instance.OnLaunch;
+            @Launch.canceled -= instance.OnLaunch;
         }
 
         /// <summary>
@@ -703,5 +735,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnAimGlide(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Launch" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLaunch(InputAction.CallbackContext context);
     }
 }

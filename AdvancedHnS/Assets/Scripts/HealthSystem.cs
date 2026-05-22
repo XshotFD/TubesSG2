@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 public class HealthSystem : MonoBehaviour
@@ -63,6 +63,9 @@ public class HealthSystem : MonoBehaviour
     }
 
     public bool IsAlive() => !isDead;
+
+    // 🔧 FIX: required by GameUI / boss bar / DeathScreen (Docs 4) — never defined in the base.
+    public float GetHealthPercent() => maxHealth > 0f ? currentHealth / maxHealth : 0f;
 
     private void Die()
     {

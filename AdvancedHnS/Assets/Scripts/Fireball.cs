@@ -7,6 +7,7 @@ public class Fireball : MonoBehaviour
     public float lifetime = 3f;
     public GameObject impactEffectPrefab;
     public float impactEffectLifetime = 0.4f;
+    public float spriteAngleOffset = 0f;
 
     [HideInInspector] public Vector2 travelDirection = Vector2.right;
     private Rigidbody2D rb;
@@ -18,7 +19,7 @@ public class Fireball : MonoBehaviour
     {
         rb.linearVelocity = travelDirection.normalized * speed;
         float angle = Mathf.Atan2(travelDirection.y, travelDirection.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0, 0, angle);
+        transform.rotation = Quaternion.Euler(0, 0, angle + spriteAngleOffset);
         Destroy(gameObject, lifetime);
     }
 

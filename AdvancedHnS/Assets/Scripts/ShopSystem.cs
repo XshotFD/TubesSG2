@@ -27,10 +27,7 @@ public class ShopSystem : MonoBehaviour
         if (shopUI) shopUI.SetActive(false);
     }
 
-    void Update()
-    {
-        // Interact input is now handled by PlayerInput, so we'll expose a public method
-    }
+    void Update() { /* Interact is handled by Player Input via OnInteract */ }
 
     public void ToggleShop()
     {
@@ -53,16 +50,9 @@ public class ShopSystem : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player")) playerInRange = true;
-    }
-    void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player")) { playerInRange = false; if (isOpen) ToggleShop(); }
-    }
+    void OnTriggerEnter2D(Collider2D other) { if (other.CompareTag("Player")) playerInRange = true; }
+    void OnTriggerExit2D(Collider2D other) { if (other.CompareTag("Player")) { playerInRange = false; if (isOpen) ToggleShop(); } }
 
-    // Called from PlayerInput Interact action
     public void OnInteract(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
     {
         if (ctx.performed && playerInRange) ToggleShop();

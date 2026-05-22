@@ -2661,7 +2661,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 387
-        y: 676
+        y: 677
         width: 90
         height: 28
       alignment: 0
@@ -4790,6 +4790,28 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: TX Village Props_0
+      rect:
+        serializedVersion: 2
+        x: 387
+        y: 606
+        width: 116
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c692e8dffb60c314f97156cc3e3b08ec
+      internalID: -672237445
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -4996,6 +5018,7 @@ TextureImporter:
       TX Village Props - Wooden Bridge Part 04: 1792859017
       TX Village Props - Wooden Bridge Part 05: -446960186
       TX Village Props - Wooden Bridge Rope: 1919939598
+      TX Village Props_0: -672237445
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -34,18 +34,25 @@ public class PlayerMovement : MonoBehaviour
     public int maxHoverCharges = 1;
 
     [Header("Air Hang")]
-    public float hangDuration = 1.5f;      
-    public float hangVerticalSpeed = 0f;   
+    public float hangDuration = 1.5f;
+    public float hangVerticalSpeed = 0f;
 
-    private bool airHangHeld;              
-    private bool isHanging;                
-    private float hangTimer;               
+    [Header("Wall Latch")]
+    public float latchSlideSpeed = 1.5f;
+    public float wallJumpForceX = 8f;
+    public float wallJumpForceY = 10f;
+    public Transform wallCheckR;
+    public Transform wallCheckL;
+
+    private bool airHangHeld;
+    private bool isHanging;
+    private float hangTimer;
     private bool airHangAvailable;
 
     // Public state for other scripts
     [HideInInspector] public bool isGrounded;
     [HideInInspector] public bool isSliding;
-    
+
     private Vector2 moveInput;
     private float coyoteTimeCounter;
     public float jumpBufferCounter;
@@ -58,6 +65,10 @@ public class PlayerMovement : MonoBehaviour
     private float hoverTimer;
     private float hoverCooldownTimer;
     private int currentHoverCharges;
+
+    private bool isTouchingWall;
+    private bool isLatched;
+    private int wallDirection;
 
     void Awake()
     {
@@ -72,6 +83,8 @@ public class PlayerMovement : MonoBehaviour
         hangTimer = hangDuration;
         airHangAvailable = false;
         if (groundCheck == null) Debug.LogError("GroundCheck not assigned!");
+        if (wallCheckR == null || wallCheckL == null)
+            Debug.LogError("WallCheck children missing! Assign them in the Inspector.");
 
     }
 
@@ -80,6 +93,7 @@ public class PlayerMovement : MonoBehaviour
         // Ground detection
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
         coyoteTimeCounter = isGrounded ? coyoteTime : coyoteTimeCounter - Time.deltaTime;
+
         if (!isGrounded) airHangAvailable = true;
         if (isGrounded && jumpBufferCounter <= 0f && !isJumping)
         {
@@ -89,11 +103,21 @@ public class PlayerMovement : MonoBehaviour
         {
             currentHoverCharges = maxHoverCharges;
             airHangAvailable = false;
-            hangTimer = hangDuration;        
+            hangTimer = hangDuration;
+            //if (isLatched) StopLatch();
+        }
+
+        isTouchingWall = false;
+        if (!isGrounded && wallCheckR != null && wallCheckL != null)
+        {
+            bool touchR = Physics2D.OverlapCircle(wallCheckR.position, 0.2f, groundLayer);
+            bool touchL = Physics2D.OverlapCircle(wallCheckL.position, 0.2f, groundLayer);
+            if (touchR) { isTouchingWall = true; wallDirection = 1; }
+            else if (touchL) { isTouchingWall = true; wallDirection = -1; }
         }
 
         UpdateTimers();
-      
+
         anim.SetFloat("xVelocity", Mathf.Abs(rb.linearVelocity.x));
         anim.SetFloat("yVelocity", rb.linearVelocity.y);
         anim.SetBool("isGrounded", movement.isGrounded);
@@ -107,6 +131,7 @@ public class PlayerMovement : MonoBehaviour
         HandleJump();
         HandleHover();
         HandleAirHang();
+        //HandleWallLatch();
     }
 
     // ────────────── INPUT CALLBACKS ──────────────
@@ -124,6 +149,11 @@ public class PlayerMovement : MonoBehaviour
         Debug.Log($"OnJump: performed={ctx.performed}, phase={ctx.phase}");
         if (ctx.performed)
         {
+            //// Wall latch: jump while touching wall
+            //if (isTouchingWall && !isLatched && !isGrounded) { StartLatch(); return; }
+            //// Wall jump: jump while latched
+            //if (isLatched) { WallJump(); return; }
+            //// Normal jump buffer
             jumpBufferCounter = jumpBufferTime;
         }
         else if (ctx.canceled && rb.linearVelocity.y > 0)
@@ -140,7 +170,8 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log($"Slide check: moveInput.x={moveInput.x} (>{0.1f:?}), isSliding={isSliding}, cooldown={slideCooldownTimer} (<=0? {slideCooldownTimer <= 0}), isGrounded={isGrounded}");
             if (Mathf.Abs(moveInput.x) > 0.1f && !isSliding && slideCooldownTimer <= 0 && isGrounded)
                 StartSlide();
-        };
+        }
+        ;
     }
 
     public void OnHover(InputAction.CallbackContext ctx)
@@ -184,7 +215,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    
     void HandleHover()
     {
         if (isHovering) rb.linearVelocity = new Vector2(rb.linearVelocity.x, hoverForce);
@@ -216,6 +246,13 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    //void HandleWallLatch()
+    //{
+    //    if (!isLatched) return;
+    //    rb.linearVelocity = new Vector2(0, -latchSlideSpeed);
+    //    if (isGrounded || !isTouchingWall) StopLatch();
+    //}
+
     IEnumerator JumpCooldown() { isJumping = true; yield return new WaitForSeconds(0.1f); isJumping = false; }
 
     void StartSlide() { isSliding = true; slideTimer = slideDuration; slideCooldownTimer = slideCooldown; }
@@ -223,13 +260,38 @@ public class PlayerMovement : MonoBehaviour
 
     void StartHover()
     {
-        isHovering = true; 
-        hoverTimer = hoverDuration; 
+        isHovering = true;
+        hoverTimer = hoverDuration;
         currentHoverCharges--;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0); // reset vertical speed
         jumpBufferCounter = 0f;
     }
     void StopHover() { isHovering = false; hoverCooldownTimer = hoverCooldown; }
+
+    //void StartLatch()
+    //{
+    //    isLatched = true;
+    //    isSliding = false;
+    //    isHovering = false;
+    //    rb.gravityScale = 0f;
+    //    currentHoverCharges = maxHoverCharges; // refresh on latch
+    //    jumpBufferCounter = 0;
+    //    coyoteTimeCounter = 0;
+    //    isJumping = false;
+    //    transform.localScale = new Vector3(
+    //        wallDirection * Mathf.Abs(transform.localScale.x),
+    //        transform.localScale.y, 1);
+    //}
+
+    //void WallJump()
+    //{
+    //    rb.linearVelocity = new Vector2(-wallDirection * wallJumpForceX, wallJumpForceY);
+    //    isLatched = false;
+    //    rb.gravityScale = 3f;
+    //    currentHoverCharges = maxHoverCharges;
+    //}
+
+    //void StopLatch() { isLatched = false; rb.gravityScale = 3f; }
 
     void UpdateTimers()
     {
@@ -242,8 +304,13 @@ public class PlayerMovement : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        if (groundCheck == null) return;
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        }
+        //if (wallCheckR != null) { Gizmos.color = Color.blue; Gizmos.DrawWireSphere(wallCheckR.position, 0.2f); }
+        //if (wallCheckL != null) { Gizmos.color = Color.blue; Gizmos.DrawWireSphere(wallCheckL.position, 0.2f); }
     }
+
 }

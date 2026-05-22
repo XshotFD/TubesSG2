@@ -8,7 +8,7 @@ public class MeleeCombat : MonoBehaviour
     public Transform attackPoint;
     public float attackRange = 1.5f;
     public LayerMask enemyLayers;
-    public float attackCooldown = 0.3f;
+    public float attackCooldown = 0.7f;
 
     [Header("Combo")]
     public float comboWindow = 0.6f;
