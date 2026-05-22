@@ -10,7 +10,7 @@ public class GrapplingHook : MonoBehaviour
     public Transform gunTip;
 
     [Header("Cooldown")]
-    public float rechargeTime = 3f;          // <-- NEW: 3 seconds cooldown
+    public float rechargeTime = 1f;         
 
     [Header("Visual")]
     public LineRenderer ropeRenderer;

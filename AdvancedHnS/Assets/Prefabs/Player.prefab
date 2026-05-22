@@ -540,7 +540,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5354e0df43fde2b42a651a389fd2c9fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthSystem
-  maxHealth: 100
+  maxHealth: 200
   currentHealth: 0
   invincibilityDuration: 1
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
